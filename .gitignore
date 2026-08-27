@@ -1,0 +1,17 @@
+.cache/
+checkpoints/
+wandb/
+
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+.DS_Store
+*.log
+training.csv
+
+reports/*.aux
+reports/*.listing
+reports/*.out
+reports/*.synctex.gz
+reports/*.toc
