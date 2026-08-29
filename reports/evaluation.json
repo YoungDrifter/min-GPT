@@ -1,0 +1,32 @@
+{
+  "training": {
+    "optimizer_steps": 2500,
+    "best_step": 2500,
+    "monitor_validation_samples": 40,
+    "initial_validation_loss": 3.3308,
+    "best_validation_loss": 2.674167302469857,
+    "best_validation_perplexity": 14.500270377411363
+  },
+  "full_test": {
+    "samples": 6740,
+    "reply_tokens": 107825,
+    "batch_size": 2,
+    "baseline": {
+      "loss": 3.7458233445607783,
+      "perplexity": 42.343856454298916,
+      "wandb_run_id": "nj6qn3m9"
+    },
+    "fine_tuned_best": {
+      "checkpoint": "checkpoints/best.pt",
+      "checkpoint_step": 2500,
+      "loss": 2.6591854387774645,
+      "perplexity": 14.284648637529424,
+      "wandb_run_id": "gk54iku3"
+    },
+    "improvement": {
+      "absolute_loss_reduction": 1.0866379057833138,
+      "relative_loss_reduction_percent": 29.00932067074639,
+      "relative_perplexity_reduction_percent": 66.26512123914215
+    }
+  }
+}

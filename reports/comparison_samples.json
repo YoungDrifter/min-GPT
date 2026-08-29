@@ -1,0 +1,42 @@
+{
+  "checkpoint": "checkpoints/best.pt",
+  "checkpoint_step": 2500,
+  "seed": 1337,
+  "max_new_tokens": 50,
+  "temperature": 0.75,
+  "top_k": 50,
+  "repetition_penalty": 1.1,
+  "samples": [
+    {
+      "prompt": "Hello!",
+      "baseline": "Welcome to the subreddit . It's me , and it feels good ! u flappy bird cat also likes pineapple on pizza : 3 Mwahahahaha Edit just kidding I thought you were a girl ... but nice catch anyways .. haha xD g",
+      "fine_tuned": "Hi , Paul ! I'd like to see this picture please . It's really fresh . How much is it ?"
+    },
+    {
+      "prompt": "How are you today?",
+      "baseline": "That's very interesting , and something I've not seen discussed around here before . Does the difference in sleep have any relevance to whether or no REM meds should be used ? Thanks ! :D lt 3 edit jinxed it .. bye again",
+      "fine_tuned": "I'm fine.Thank ' s for asking . How's your day ? What did she say to you , Mr Li or Ms li about the show last night with her husband again and who else is going on vacation from New York tonight at noon morning"
+    },
+    {
+      "prompt": "What do you like to do?",
+      "baseline": "I'm curious , what kind of stuff ? Just social things are fine . We usually don't have too hard a say in these types if we meet up again on Friday evening ! :D Hope it goes well though ... lt 3hugs c",
+      "fine_tuned": "I want a travel agent and I ’ Ve always liked American Airlines . And with this company , there's no better choice than B& T in the same region as Air India or Malaysian airlines ? So why are they different now that it is popular"
+    },
+    {
+      "prompt": "I'm feeling a little sad.",
+      "baseline": "So ... where are we all going ? ! Edit : thanks for the gold kind stranger . I can't wait to go there with my family and eat some nice pizza again when season 7 rolls around .. sips champagne yep , that's me too",
+      "fine_tuned": "How about you ? What are your health problems in the meantime on this boat again , and what's changed over time with all that good news . Good luck anyway ! I hope someone will help me find out some answers to those of my questions . That"
+    },
+    {
+      "prompt": "Tell me something interesting.",
+      "baseline": "Well , not the same as my name . That's a bummer too man .. but I'm going with it anyways ... just felt like sharing you guys had so much in common ! Lol ? :P P Anyway happy hunting XD D: lt",
+      "fine_tuned": "Do you have a picture of our office ? How much are we talking about for that photo ? I think its worth $ 50 . Will it be safe to show off the house while leaving or is this too expensive at best in order make sure there's"
+    }
+  ],
+  "acceptance": {
+    "non_empty_replies": 5,
+    "replies_not_equal_to_normalized_prompt": 5,
+    "english_like_replies": 5,
+    "note": "All outputs are non-empty English-like suffixes and do not copy the prompt. Relevance and long-range coherence remain inconsistent."
+  }
+}

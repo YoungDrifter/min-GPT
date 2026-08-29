@@ -1,0 +1,29 @@
+{
+  "seed": 1337,
+  "max_new_tokens": 50,
+  "temperature": 0.75,
+  "top_k": 50,
+  "repetition_penalty": 1.1,
+  "samples": [
+    {
+      "prompt": "Hello!",
+      "reply": "Welcome to the subreddit . It's me , and it feels good ! u flappy bird cat also likes pineapple on pizza : 3 Mwahahahaha Edit just kidding I thought you were a girl ... but nice catch anyways .. haha xD g"
+    },
+    {
+      "prompt": "How are you today?",
+      "reply": "That's very interesting , and something I've not seen discussed around here before . Does the difference in sleep have any relevance to whether or no REM meds should be used ? Thanks ! :D lt 3 edit jinxed it .. bye again"
+    },
+    {
+      "prompt": "What do you like to do?",
+      "reply": "I'm curious , what kind of stuff ? Just social things are fine . We usually don't have too hard a say in these types if we meet up again on Friday evening ! :D Hope it goes well though ... lt 3hugs c"
+    },
+    {
+      "prompt": "I'm feeling a little sad.",
+      "reply": "So ... where are we all going ? ! Edit : thanks for the gold kind stranger . I can't wait to go there with my family and eat some nice pizza again when season 7 rolls around .. sips champagne yep , that's me too"
+    },
+    {
+      "prompt": "Tell me something interesting.",
+      "reply": "Well , not the same as my name . That's a bummer too man .. but I'm going with it anyways ... just felt like sharing you guys had so much in common ! Lol ? :P P Anyway happy hunting XD D: lt"
+    }
+  ]
+}
