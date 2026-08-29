@@ -1,0 +1,503 @@
+%% ================================================================
+%%  lab_report.sty
+%%  An English-language LaTeX style for laboratory / numerical
+%%  analysis reports, built on the same design language as
+%%  math_notes.sty and math_paper.sty (AMS-style section headings,
+%%  author-left / title-right running heads, tocloft "Contents"),
+%%  with report-specific support: algorithms, Python code listings,
+%%  siunitx tables, captions, and float barriers at section breaks.
+%%
+%%  Engine:   XeLaTeX (fontspec / unicode-math); CJK support via xeCJK
+%%            with the macOS system fonts Songti SC / PingFang SC
+%%            (Chinese text may be written directly in the document).
+%%
+%%  Usage:
+%%    \documentclass[11pt]{article}
+%%    \usepackage{lab_report}
+%%    \title{...}  \author{...}  \date{...}
+%%    \subtitle{...}             % optional
+%%    \id{...}                   % optional, e.g. student ID
+%%    \shorttitle{...}           % optional, for the running head
+%%    \shortauthor{...}          % optional, for the running head
+%%    \begin{document}
+%%    \maketitle      % title block + Contents on page 1 (the body
+%%                    % automatically starts on a fresh page)
+%%    \section{...} ...
+%%    \appendix \section{...} ...
+%%    \end{document}
+%%
+%%  Design notes
+%%  ------------
+%%  * article class, one-sided; sections are free-form (no fixed
+%%    skeleton). Theorem-like environments and equations are
+%%    numbered within sections (Theorem 2.1, equation (2.3)).
+%%  * No separate cover page: title, subtitle, author, optional
+%%    student ID and date sit at the top of page 1, followed by the
+%%    table of contents (flush-left bold "Contents", black entries,
+%%    as in math_notes); the body then starts on a fresh page.
+%%  * Running heads follow math_notes: author left, title right,
+%%    small italic uppercase, page number centred in the footer,
+%%    no header on the first page. \shortauthor/\shorttitle fall
+%%    back to the full \author and \title when not given.
+%%  * Section headings follow the AMS look (centred bold
+%%    "1. INTRODUCTION"); the first paragraph after a heading is
+%%    not indented (standard LaTeX behaviour).
+%%  * Report extras: algorithm/algpseudocode, listings-based Python
+%%    code boxes (\begin{pythoncode}...), siunitx + booktabs
+%%    tables, captions, and a \FloatBarrier before every \section.
+%% ================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{lab_report}[2026/08/20 v2.0 English article-style lab report]
+
+\RequirePackage{iftex}
+\RequireXeTeX  % this style is written for xelatex
+
+%% ---------------------------------------------------------------
+%% 1. Page geometry (AMS journal text block, ~6.5 x 9.5 in @ 11pt)
+%% ---------------------------------------------------------------
+\RequirePackage[
+  paper=a4paper,
+  top=2.8cm, bottom=2.8cm,
+  left=2.7cm, right=2.7cm,
+  headheight=14pt,
+  footskip=1.4cm
+]{geometry}
+
+\RequirePackage{setspace}
+\setstretch{1.1}                 % reports are read in long sessions
+
+%% ---------------------------------------------------------------
+%% 2. Fonts (Latin Modern text + Latin Modern Math via unicode-math)
+%% ---------------------------------------------------------------
+\RequirePackage{fontspec}
+\RequirePackage{mathtools}     % loaded before unicode-math, as it recommends
+
+\ExplSyntaxOn
+\msg_redirect_name:nnn {unicode-math} {mathtools-overbracket} {none}
+\msg_redirect_name:nnn {unicode-math} {mathtools-colon} {none}
+\ExplSyntaxOff
+\RequirePackage{unicode-math}
+
+\setmainfont{lmroman10-regular.otf}[
+  BoldFont=lmroman10-bold.otf,
+  ItalicFont=lmroman10-italic.otf,
+  BoldItalicFont=lmroman10-bolditalic.otf]
+\setsansfont{lmsans10-regular.otf}[
+  BoldFont=lmsans10-bold.otf,
+  ItalicFont=lmsans10-oblique.otf,
+  BoldItalicFont=lmsans10-boldoblique.otf]
+\setmonofont{lmmono10-regular.otf}[
+  Scale=MatchLowercase,
+  BoldFont=lmmonolt10-bold.otf,
+  ItalicFont=lmmono10-italic.otf,
+  BoldItalicFont=lmmonolt10-boldoblique.otf]
+\setmathfont{latinmodern-math.otf}
+\setmathfont{latinmodern-math.otf}[version=bold]
+
+\RequirePackage{xeCJK}
+\ExplSyntaxOn
+% Silence fontspec's informational "Script 'CJK' not explicitly
+% supported" notes for the CJK fonts (they render correctly).
+\msg_redirect_name:nnn {fontspec} {script-not-exist} {none}
+\ExplSyntaxOff
+% macOS system fonts: Songti SC (\textrm/宋体), Kaiti SC (italic
+% stand-in/楷体), PingFang SC (\textsf/苹方) and STFangsong
+% (\texttt/仿宋). On other systems replace these names with locally
+% installed CJK fonts.
+\setCJKmainfont{Songti SC}[
+  BoldFont       = Songti SC Bold,
+  ItalicFont     = {/System/Library/AssetsV2/com_apple_MobileAsset_Font8/88d6cc32a907955efa1d014207889413890573be.asset/AssetData/Kaiti.ttc},
+  BoldItalicFont = {/System/Library/AssetsV2/com_apple_MobileAsset_Font8/88d6cc32a907955efa1d014207889413890573be.asset/AssetData/Kaiti.ttc}]
+\setCJKsansfont{PingFang SC}[
+  BoldFont       = PingFang SC Semibold,
+  ItalicFont     = {/System/Library/AssetsV2/com_apple_MobileAsset_Font8/88d6cc32a907955efa1d014207889413890573be.asset/AssetData/Kaiti.ttc},
+  BoldItalicFont = {/System/Library/AssetsV2/com_apple_MobileAsset_Font8/88d6cc32a907955efa1d014207889413890573be.asset/AssetData/Kaiti.ttc}]
+\setCJKmonofont{STFANGSO.ttf}[
+  Path = {/System/Library/AssetsV2/com_apple_MobileAsset_Font8/1b6b2f148cdf17dd0d788706c83c61ca1998c3a6.asset/AssetData/}]
+
+
+\RequirePackage{microtype}
+
+%% ---------------------------------------------------------------
+%% 3. Core math packages + report-specific packages
+%% ---------------------------------------------------------------
+% amsmath is loaded by mathtools; amssymb is intentionally NOT loaded
+% (unicode-math supplies the full AMS symbol set); use \boldsymbol
+% rather than \bm for bold math.
+\RequirePackage{amsthm}
+\RequirePackage{graphicx}
+\RequirePackage{enumitem}
+\RequirePackage{xcolor}
+\RequirePackage{booktabs}
+\RequirePackage{siunitx}
+\RequirePackage{caption}
+\RequirePackage{algorithm}
+\RequirePackage{algpseudocode}
+\RequirePackage{listings}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{placeins}
+\RequirePackage{etoolbox}
+\RequirePackage{needspace}
+\RequirePackage{tocloft}
+\RequirePackage{fancyhdr}
+
+\allowdisplaybreaks[2]
+\numberwithin{equation}{section}
+\counterwithin{algorithm}{section}
+\setcounter{secnumdepth}{3}
+
+% Default enumerate labels: (i)/(ii)/... at the top level, (a)/(b)/...
+% nested -- the common convention in math papers.
+\setlist[enumerate,1]{label=(\roman*)}
+\setlist[enumerate,2]{label=(\alph*)}
+
+%% ---------------------------------------------------------------
+%% 4. Captions (figures/table/algorithm)
+%% ---------------------------------------------------------------
+\captionsetup{
+  font=small,
+  labelfont=bf,
+  labelsep=period,
+  justification=centering,
+  singlelinecheck=true
+}
+\captionsetup[figure]{position=bottom,skip=7pt}
+\captionsetup[table]{position=top,skip=6pt}
+\captionsetup[algorithm]{position=top,skip=6pt}
+
+%% ---------------------------------------------------------------
+%% 5. Section heading style (AMS "1. Introduction" look)
+%% ---------------------------------------------------------------
+\RequirePackage{titlesec}
+
+\titleformat{\section}
+  {\normalfont\bfseries\centering}{\thesection.}{0.5em}{\bfseries\MakeUppercase}
+\titlespacing*{\section}{0pt}{2.2ex plus 1ex minus .2ex}{1.4ex plus .2ex}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries}{\thesubsection.}{0.5em}{}
+\titlespacing*{\subsection}{0pt}{1.8ex plus 1ex minus .2ex}{1ex plus .2ex}
+
+\titleformat{\subsubsection}
+  {\normalfont\itshape}{\thesubsubsection.}{0.5em}{}
+\titlespacing*{\subsubsection}{0pt}{1.6ex plus 1ex minus .2ex}{0.8ex plus .2ex}
+
+% Appendices are relabelled "Appendix A." etc.; theorem and equation
+% numbering picks up the letter automatically. This must be defined
+% BEFORE cleveref loads, which chains through it.
+\let\lr@oldappendix\appendix
+\renewcommand{\appendix}{%
+  \lr@oldappendix
+  \titleformat{\section}
+    {\normalfont\bfseries\centering}{Appendix~\thesection.}{0.5em}{\bfseries\MakeUppercase}
+}
+
+% Float barrier before each \section, and widow protection before
+% headings (the kernel's command hooks work with titlesec).
+\AddToHook{cmd/section/before}{\FloatBarrier\needspace{8\baselineskip}}
+\AddToHook{cmd/subsection/before}{\needspace{7\baselineskip}}
+\AddToHook{cmd/subsubsection/before}{\needspace{5\baselineskip}}
+
+%% ---------------------------------------------------------------
+%% 6. Table of contents ("Contents") styling -- the same as
+%%    math_notes: flush-left bold heading, section entries without
+%%    dot leaders, subsection entries with dot leaders. Depth 2.
+%% ---------------------------------------------------------------
+\renewcommand{\cfttoctitlefont}{\normalfont\bfseries\Large\raggedright}
+\setlength{\cftbeforetoctitleskip}{2em}
+\setlength{\cftaftertoctitleskip}{1.2em}
+
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+\renewcommand{\cftsecdotsep}{\cftnodots}
+\setlength{\cftbeforesecskip}{0.6em}
+
+\setlength{\cftsubsecindent}{1.5em}
+\setlength{\cftsubsubsecindent}{3em}
+
+\setcounter{tocdepth}{2}
+
+%% ---------------------------------------------------------------
+%% 7. Title block (inline, no cover page) + Contents + body break
+%% ---------------------------------------------------------------
+\newcommand{\labreport@subtitle}{}
+\newcommand{\labreport@id}{}
+\newcommand{\subtitle}[1]{\gdef\labreport@subtitle{#1}}
+\newcommand{\id}[1]{\gdef\labreport@id{#1}}
+
+\renewcommand{\maketitle}{%
+  \begingroup
+  \renewcommand\thefootnote{\@fnsymbol\c@footnote}%
+  \begin{center}
+    {\LARGE\bfseries \@title\par}
+    \ifx\labreport@subtitle\@empty\else
+      \vspace{1.2em}
+      {\large\itshape \labreport@subtitle\par}
+    \fi
+    \vspace{1.6em}
+    {\large \lineskip .75em \@author\par}
+    \ifx\labreport@id\@empty\else
+      \vspace{0.35em}
+      {\normalsize \labreport@id\par}
+    \fi
+    \vspace{0.9em}
+    {\normalsize \@date\par}
+  \end{center}
+  \thispagestyle{plain}\@thanks
+  \endgroup
+  \setcounter{footnote}{0}%
+  \vspace{1.5em}
+  \tableofcontents
+}
+
+%% ---------------------------------------------------------------
+%% 8. Running heads / footers (author left, title right; page number
+%%    centred in the footer; no header on the first page)
+%% ---------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\newcommand{\@shorttitle}{}
+\newcommand{\@shortauthor}{}
+\newcommand{\shorttitle}[1]{\renewcommand{\@shorttitle}{#1}}
+\newcommand{\shortauthor}[1]{\renewcommand{\@shortauthor}{#1}}
+% one-sided article: only the L/C/R header positions exist
+\fancyhead[L]{\small\itshape \MakeUppercase{\@shortauthor}}
+\fancyhead[R]{\small\itshape \MakeUppercase{\@shorttitle}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \fancyfoot[C]{\small\thepage}
+  \renewcommand{\headrulewidth}{0pt}
+}
+
+%% ---------------------------------------------------------------
+%% 9. Python code listings
+%% ---------------------------------------------------------------
+\definecolor{LRCodeBackground}{gray}{0.975}
+\definecolor{LRCodeGutter}{HTML}{F0F1F2}
+\definecolor{LRCodeRule}{HTML}{B9BEC4}
+\definecolor{LRCodeNumber}{HTML}{69737D}
+\definecolor{LRCodeComment}{HTML}{667681}
+\definecolor{LRCodeKeyword}{HTML}{294F78}
+\definecolor{LRCodeString}{HTML}{785735}
+\definecolor{LRCodeBuiltin}{HTML}{66507A}
+
+\lstdefinestyle{labreportpython}{
+  language=Python,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries\color{LRCodeKeyword},
+  commentstyle=\itshape\color{LRCodeComment},
+  stringstyle=\color{LRCodeString},
+  emph={abs,float,int,len,list,max,min,print,range,round,sum,tuple},
+  emphstyle=\color{LRCodeBuiltin},
+  numbers=left,
+  numberstyle=\scriptsize\ttfamily\color{LRCodeNumber},
+  numbersep=10pt,
+  stepnumber=1,
+  showstringspaces=false,
+  keepspaces=true,
+  columns=fullflexible,
+  breaklines=true,
+  breakatwhitespace=false,
+  tabsize=4,
+  upquote=true
+}
+
+% A breakable, numbered code box: \begin{pythoncode}[label={lst:name}]
+\newtcblisting[auto counter,number within=section]{pythoncode}[1][]{
+  enhanced,
+  breakable,
+  listing only,
+  listing options={style=labreportpython},
+  colback=LRCodeBackground,
+  colframe=LRCodeRule,
+  boxrule=0.4pt,
+  arc=0pt,
+  outer arc=0pt,
+  left=2.55em,
+  right=5pt,
+  top=-3pt,
+  bottom=-2.5pt,
+  underlay={%
+    \fill[LRCodeGutter]
+      (frame.south west) rectangle
+      ([xshift=2.35em]frame.north west);
+  },
+  overlay={%
+    \draw[LRCodeRule,line width=0.35pt]
+      ([xshift=2.35em]frame.south west) --
+      ([xshift=2.35em]frame.north west);
+  },
+  before skip=10pt plus 2pt,
+  after skip=10pt plus 2pt,
+  label type=lstlisting,
+  #1,
+  notitle
+}
+
+%% ---------------------------------------------------------------
+%% 10. Hyperlinks & smart references (loaded last, muted colours as
+%%     used on arXiv HTML / most journal PDFs)
+%% ---------------------------------------------------------------
+\RequirePackage[
+  colorlinks=true,
+  linkcolor={red!55!black},
+  citecolor={blue!55!black},
+  urlcolor={blue!55!black},
+  bookmarksnumbered=true,
+  pdfstartview=FitH
+]{hyperref}
+\RequirePackage[nameinlink,capitalize]{cleveref}
+
+% Workaround for a LaTeX-kernel/cleveref interaction. With TeX Live
+% 2025+ the kernel applies a "first aid" patch to cleveref 0.21.4 that
+% rebuilds \cref@currentlabel from \@currentcounter at every \label,
+% overwriting the cref type that cleveref itself assigns inside
+% theorem-like environments sharing a counter (a reference to
+% Lemma 3.3 would otherwise print "Theorem 3.3"). Since hyperref is
+% loaded above, cleveref maintains the label data itself (through
+% \H@refstepcounter and the [type]-form of \refstepcounter), so we
+% simply drop the first-aid label hook. This is a no-op on toolchains
+% where the patch is absent.
+\@ifundefined{firstaid@cref@updatelabeldata}{}{%
+  \RemoveFromHook{label}[firstaid/cleveref]%
+}
+
+%% ---- Theorem environments (AMS style) --------------------------
+%% Defined AFTER cleveref so that cleveref's amsthm support assigns
+%% each environment its own cref type (Lemma, Corollary, ...) even
+%% though they share one counter.
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{notation}[theorem]{Notation}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{question}[theorem]{Question}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem*{remark*}{Remark}
+
+% QED symbol: filled square (AMS-style "Halmos" tombstone).
+\renewcommand{\qedsymbol}{$\mdlgblksquare$}
+
+% \solution is \proof with a different head, e.g. \begin{solution}.
+\newenvironment{solution}[1][Solution]
+  {\begin{proof}[#1]}
+  {\end{proof}}
+
+% Avoid a theorem-like head or a very short statement being stranded
+% at the bottom of a page.
+\newcommand{\labreport@reserveenvironmentspace}{\Needspace{7\baselineskip}}
+\BeforeBeginEnvironment{theorem}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{lemma}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{proposition}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{corollary}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{conjecture}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{definition}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{example}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{notation}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{assumption}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{question}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{remark}{\labreport@reserveenvironmentspace}
+\BeforeBeginEnvironment{proof}{\labreport@reserveenvironmentspace}
+
+\crefname{section}{Section}{Sections}
+\crefname{subsection}{Section}{Sections}
+\crefname{theorem}{Theorem}{Theorems}
+\crefname{lemma}{Lemma}{Lemmas}
+\crefname{proposition}{Proposition}{Propositions}
+\crefname{corollary}{Corollary}{Corollaries}
+\crefname{conjecture}{Conjecture}{Conjectures}
+\crefname{definition}{Definition}{Definitions}
+\crefname{example}{Example}{Examples}
+\crefname{notation}{Notation}{Notations}
+\crefname{assumption}{Assumption}{Assumptions}
+\crefname{question}{Question}{Questions}
+\crefname{remark}{Remark}{Remarks}
+\crefname{figure}{Figure}{Figures}
+\crefname{table}{Table}{Tables}
+\crefname{algorithm}{Algorithm}{Algorithms}
+\crefname{lstlisting}{Code Listing}{Code Listings}
+\crefname{equation}{}{}
+\creflabelformat{equation}{(#2#1#3)}
+
+% Table-of-contents entries are plain black -- only in-text
+% citations/cross-references/URLs use the coloured links above.
+% NB: tocloft defines the real \tableofcontents inside its own
+% \AtBeginDocument hook, so the wrap must be deferred to
+% \AtBeginDocument as well to run after tocloft's.
+\AtBeginDocument{%
+  \let\lr@tableofcontents\tableofcontents
+  \renewcommand{\tableofcontents}{%
+    \begingroup
+    \hypersetup{linkcolor=black}%
+    \lr@tableofcontents
+    \endgroup
+  }%
+}
+
+% PDF metadata plus fallbacks for the running head: \shorttitle and
+% \shortauthor are used if given, otherwise the full \title and
+% \author (with \thanks/\and neutralised) are used.
+\AtBeginDocument{%
+  \hypersetup{pdftitle=\@title, pdfauthor=\@author}%
+  \ifx\@shorttitle\@empty
+    \begingroup
+      \let\thanks\@gobble
+      \protected@xdef\@shorttitle{\@title}%
+    \endgroup
+  \fi
+  \ifx\@shortauthor\@empty
+    \begingroup
+      \let\thanks\@gobble
+      \def\and{, }%
+      \protected@xdef\@shortauthor{\@author}%
+    \endgroup
+  \fi
+}
+
+%% ---------------------------------------------------------------
+%% 11. Common notation macros used across most reports
+%% ---------------------------------------------------------------
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\1}{\mathbf{1}}
+
+\DeclareMathOperator{\rank}{rank}
+\DeclareMathOperator{\dist}{dist}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\supp}{supp}
+\DeclareMathOperator{\im}{Im}
+\DeclareMathOperator{\re}{Re}
+\DeclareMathOperator{\Hom}{Hom}
+\DeclareMathOperator{\Aut}{Aut}
+\DeclareMathOperator{\End}{End}
+\DeclareMathOperator{\Spec}{Spec}
+\DeclareMathOperator*{\esssup}{ess\,sup}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\DeclarePairedDelimiter{\abs}{\lvert}{\rvert}
+\DeclarePairedDelimiter{\norm}{\lVert}{\rVert}
+\DeclarePairedDelimiter{\inner}{\langle}{\rangle}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\endinput
